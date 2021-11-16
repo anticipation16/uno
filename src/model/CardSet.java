@@ -1,9 +1,10 @@
 package model;
 
 import java.util.HashSet;
+import java.util.Set;
 
 public class CardSet {
-    HashSet<Card> cards = new HashSet<>();
+    Set<Card> cards = new HashSet<>();
 
     public CardSet() {
 
@@ -15,6 +16,10 @@ public class CardSet {
 
     @Override
     public String toString() {
-        return cards.toString();
+        StringBuilder s = new StringBuilder();
+        for (Card card : cards) {
+            s.append(card.toString()).append("\n");
+        }
+        return s.toString();
     }
 }

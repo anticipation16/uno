@@ -1,3 +1,4 @@
+import exceptions.IllegalMoveException;
 import model.*;
 
 import java.util.*;
@@ -27,7 +28,6 @@ public class Game {
         List<Card> allCards = Stream.of(yellowCards, greenCards, blueCards, redCards)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
-
         drawPile = new Pile(allCards);
         discardPile = new Pile();
         this.gameServer = gameServer;
@@ -50,20 +50,17 @@ public class Game {
                 cardSet.add(drawPile.popTopCard());
             }
             playerCardSetMap.put(player, cardSet);
-            gameServer.messagePlayer("Your cards are: " + cardSet, player);
+            gameServer.messagePlayer("Your cards are:\n" + cardSet, player);
         }
-
     }
 
 
-    public String processMove(Player p, String move) {
+    public String processMove(Player p, String move) throws IllegalMoveException {
         if (status.equals(GameStatus.WAITING_FOR_PLAYERS))
-            return "insufficient players";
+            throw new IllegalMoveException("Insufficient players!");
         if (players.get(current) != p)
-            return "Not your turn!";
+            throw new IllegalMoveException("Not your turn!");
 
-
-        System.out.println(move);
         incrementCurrentPlayerIndex();
         return move;
     }

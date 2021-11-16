@@ -6,4 +6,9 @@ public class NumberedCard extends ColoredCard {
         super(color);
         this.value = value;
     }
+
+    @Override
+    public String toString(){
+        return getColor().name() + ":" + value;
+    }
 }

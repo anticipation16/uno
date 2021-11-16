@@ -1,3 +1,5 @@
+import exceptions.IllegalMoveException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,8 +29,14 @@ public class PlayerThread extends Thread {
 
             String clientMove;
             while ((clientMove = in.readLine()) != null) {
-                sendMessage(gameServer.processMove(this, clientMove));
-                gameServer.broadcast(player.getName() + " made the move:  " + clientMove, this);
+                try {
+                    sendMessage(gameServer.processMove(this, clientMove));
+                    gameServer.broadcast(player.getName() + " made the move:  " +
+                            clientMove, this);
+                } catch (IllegalMoveException e) {
+                    out.println(e.getMessage());
+                }
+
             }
 
         } catch (IOException e) {

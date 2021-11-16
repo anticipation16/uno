@@ -6,4 +6,8 @@ public class SpecialColoredCard extends ColoredCard {
         super(color);
         this.speciality = speciality;
     }
+    @Override
+    public String toString(){
+        return getColor().toString() + ":" + speciality.name();
+    }
 }

@@ -1,3 +1,5 @@
+import exceptions.IllegalMoveException;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -41,7 +43,7 @@ public class GameServer {
         }
     }
 
-    public String processMove(PlayerThread playerThread, String move) {
+    public String processMove(PlayerThread playerThread, String move) throws IllegalMoveException {
         return game.processMove(playerThread.getPlayer(), move);
 
     }
