@@ -10,16 +10,17 @@ import static model.Color.*;
 public class Game {
     private final int maxPlayers;
     private final List<Player> players = new ArrayList<>();
-    private int current;
+    private int currentPlayerIndex;
     private Pile drawPile;
     private Pile discardPile;
     private GameStatus status;
     private final Map<Player, CardSet> playerCardSetMap = new HashMap<>();
     private GameServer gameServer;
 
+
     public Game(int maxPlayers, GameServer gameServer) {
         this.maxPlayers = maxPlayers;
-        current = 0;
+        currentPlayerIndex = 0;
         var yellowCards = CardUtility.getAllCardsOfColor(YELLOW);
         var greenCards = CardUtility.getAllCardsOfColor(GREEN);
         var blueCards = CardUtility.getAllCardsOfColor(BLUE);
@@ -37,6 +38,10 @@ public class Game {
         return status;
     }
 
+    public Player getCurrentPlayer() {
+        return players.get(currentPlayerIndex);
+    }
+
     public void setStatus(GameStatus status) {
         this.status = status;
     }
@@ -52,21 +57,38 @@ public class Game {
             playerCardSetMap.put(player, cardSet);
             gameServer.messagePlayer("Your cards are:\n" + cardSet, player);
         }
+        gameServer.broadcast("Let the game begin");
+        gameServer.broadcast("Players are : " + this.getPlayers());
+        turnBroadcast();
     }
 
 
-    public String processMove(Player p, String move) throws IllegalMoveException {
+    public void processMove(Player p, String move) throws IllegalMoveException {
         if (status.equals(GameStatus.WAITING_FOR_PLAYERS))
             throw new IllegalMoveException("Insufficient players!");
-        if (players.get(current) != p)
+        if (players.get(currentPlayerIndex) != p)
             throw new IllegalMoveException("Not your turn!");
-
+        String info = " made the move " + move;
+        gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
+                p.getName() + info,
+                "You " + info,
+                p);
         incrementCurrentPlayerIndex();
-        return move;
+    }
+
+
+    private void turnBroadcast() {
+        Player currentPlayer = getCurrentPlayer();
+        gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
+                currentPlayer.getName() + "'s turn",
+                "Your turn",
+                currentPlayer
+        );
     }
 
     private void incrementCurrentPlayerIndex() {
-        current = (current + 1) % maxPlayers;
+        currentPlayerIndex = (currentPlayerIndex + 1) % maxPlayers;
+        turnBroadcast();
     }
 
     public void addPlayer(Player p) {

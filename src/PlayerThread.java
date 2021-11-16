@@ -25,14 +25,12 @@ public class PlayerThread extends Thread {
             out.println("What's your name? ");
             String userName = in.readLine();
             player = new Player(userName);
-            gameServer.addPlayer(player);
+            gameServer.addPlayer(player, this);
 
             String clientMove;
             while ((clientMove = in.readLine()) != null) {
                 try {
-                    sendMessage(gameServer.processMove(this, clientMove));
-                    gameServer.broadcast(player.getName() + " made the move:  " +
-                            clientMove, this);
+                    gameServer.processMove(this, clientMove);
                 } catch (IllegalMoveException e) {
                     out.println(e.getMessage());
                 }
