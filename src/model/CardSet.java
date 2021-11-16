@@ -22,4 +22,20 @@ public class CardSet {
         }
         return s.toString();
     }
+
+    public boolean contains(Card card) {
+        return cards.contains(card);
+    }
+
+    public void remove(Card card) {
+        cards.remove(card);
+    }
+
+    public static void main(String[] args) {
+        Card c = new NumberedCard(Color.YELLOW, 3);
+        Card c2 = new NumberedCard(Color.YELLOW, 3);
+        CardSet cs = new CardSet();
+        cs.add(c);
+        System.out.println(cs.contains(c2));
+    }
 }

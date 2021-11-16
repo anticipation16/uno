@@ -1,3 +1,4 @@
+import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
 import model.*;
 
@@ -11,11 +12,11 @@ public class Game {
     private final int maxPlayers;
     private final List<Player> players = new ArrayList<>();
     private int currentPlayerIndex;
-    private Pile drawPile;
-    private Pile discardPile;
+    private final Pile drawPile;
+    private final Pile discardPile;
     private GameStatus status;
     private final Map<Player, CardSet> playerCardSetMap = new HashMap<>();
-    private GameServer gameServer;
+    private final GameServer gameServer;
 
 
     public Game(int maxPlayers, GameServer gameServer) {
@@ -34,9 +35,6 @@ public class Game {
         this.gameServer = gameServer;
     }
 
-    public GameStatus getStatus() {
-        return status;
-    }
 
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
@@ -59,26 +57,58 @@ public class Game {
         }
         gameServer.broadcast("Let the game begin");
         gameServer.broadcast("Players are : " + this.getPlayers());
-        turnBroadcast();
+        infoBroadcast();
     }
 
+    /**
+     * Process move of the move [1stLetterOfColor]:Number or [1stLetterOfColor]:Speciality
+     *
+     * @param player the player who made the move
+     * @param move   the move made by the player p
+     * @throws IllegalMoveException when an illegal move is made
+     */
 
-    public void processMove(Player p, String move) throws IllegalMoveException {
+
+    public void processMove(Player player, String move) throws IllegalMoveException {
         if (status.equals(GameStatus.WAITING_FOR_PLAYERS))
             throw new IllegalMoveException("Insufficient players!");
-        if (players.get(currentPlayerIndex) != p)
+        if (players.get(currentPlayerIndex) != player)
             throw new IllegalMoveException("Not your turn!");
+
+        try {
+            Card playedCard = CardUtility.stringRepToCard(move);
+            CardSet playerCardSet = playerCardSetMap.get(player);
+            if (!playerCardSet.contains(playedCard)) {
+                throw new IllegalMoveException("You do not have this card!");
+            }
+
+            Card drawPileTop = drawPile.peekTopCard();
+
+            if(drawPileTop instanceof ColoredCard && playedCard instanceof ColoredCard){
+                if(!((ColoredCard) drawPileTop).getColor().equals( ((ColoredCard) playedCard).getColor())){
+                    throw new IllegalMoveException("Your card color does not match top card on pile!");
+                }
+            }
+
+            playerCardSet.remove(playedCard);
+            discardPile.addCard(drawPile.popTopCard());
+
+        } catch (IllegalCardStringException e) {
+            throw new IllegalMoveException("Illegal Move String Played: " + e.getMessage());
+        }
+
         String info = " made the move " + move;
         gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
-                p.getName() + info,
+                player.getName() + info,
                 "You " + info,
-                p);
+                player);
         incrementCurrentPlayerIndex();
     }
 
 
-    private void turnBroadcast() {
+    private void infoBroadcast() {
         Player currentPlayer = getCurrentPlayer();
+        gameServer.broadcast("Top card on draw pile is " + drawPile.peekTopCard());
         gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
                 currentPlayer.getName() + "'s turn",
                 "Your turn",
@@ -88,7 +118,7 @@ public class Game {
 
     private void incrementCurrentPlayerIndex() {
         currentPlayerIndex = (currentPlayerIndex + 1) % maxPlayers;
-        turnBroadcast();
+        infoBroadcast();
     }
 
     public void addPlayer(Player p) {

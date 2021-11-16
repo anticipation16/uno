@@ -25,13 +25,12 @@ public class GameServer {
         var serverSocket = new ServerSocket(port);
         game = new Game(maxPlayers, this);
         game.setStatus(GameStatus.WAITING_FOR_PLAYERS);
-        while (true) {
+        for (int i = 0; i < maxPlayers; i++) {
             Socket clientSocket = serverSocket.accept();
             PlayerThread playerThread = new PlayerThread(clientSocket, this);
             playerThreads.add(playerThread);
             playerThread.start();
         }
-        //broadcast(, null);
     }
 
 
@@ -41,11 +40,11 @@ public class GameServer {
 
     public void broadcast(String message) {
         playerPlayerThreadMap.forEach((k, v) -> {
-                v.sendMessage(message);
+            v.sendMessage(message);
         });
     }
 
-    public void broadcastMessage1ToOthersMessage2ToPlayer(String message1, String message2, Player excluded){
+    public void broadcastMessage1ToOthersMessage2ToPlayer(String message1, String message2, Player excluded) {
         playerPlayerThreadMap.forEach((k, v) -> {
             if (k != excluded)
                 v.sendMessage(message1);

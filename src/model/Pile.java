@@ -27,4 +27,8 @@ public class Pile {
     public Card peekTopCard() {
         return cards.peek();
     }
+
+    public void addCard(Card card) {
+        cards.add(card);
+    }
 }

@@ -11,7 +11,7 @@ public class NumberedCard extends ColoredCard {
 
     @Override
     public String toString(){
-        return getColor().name() + ":" + value;
+        return getColor().name().charAt(0) + ":" + value;
     }
 
     @Override
