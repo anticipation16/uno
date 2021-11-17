@@ -3,12 +3,18 @@ package model;
 import java.util.Objects;
 
 public class SpecialColoredCard extends ColoredCard {
-    Speciality speciality;
+
+    private final Speciality speciality;
 
     public SpecialColoredCard(Color color, Speciality speciality) {
         super(color);
         this.speciality = speciality;
     }
+
+    public Speciality getSpeciality() {
+        return speciality;
+    }
+
 
     @Override
     public String toString() {

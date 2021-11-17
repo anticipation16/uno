@@ -1,3 +1,4 @@
+import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
 
 import java.io.IOException;
@@ -7,10 +8,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 public class GameServer {
-    private int port;
+    private final int port;
     private final Set<PlayerThread> playerThreads = new HashSet<>();
     private final Map<Player, PlayerThread> playerPlayerThreadMap = new HashMap<>();
     private Game game;
@@ -38,9 +37,19 @@ public class GameServer {
         playerPlayerThreadMap.get(player).sendMessage(message);
     }
 
+
+    public String askPlayer(String message, Player player) throws IOException {
+        return playerPlayerThreadMap.get(player).askQuestion(message);
+    }
+
     public void broadcast(String message) {
+        playerPlayerThreadMap.forEach((k, v) -> v.sendMessage(message));
+    }
+
+    public void broadcastToAllExcept(String message, Player excluded){
         playerPlayerThreadMap.forEach((k, v) -> {
-            v.sendMessage(message);
+            if (k != excluded)
+                v.sendMessage(message);
         });
     }
 
@@ -53,7 +62,7 @@ public class GameServer {
         });
     }
 
-    public void processMove(PlayerThread playerThread, String move) throws IllegalMoveException {
+    public void processMove(PlayerThread playerThread, String move) throws IllegalMoveException, IllegalCardStringException, IOException {
         game.processMove(playerThread.getPlayer(), move);
     }
 
@@ -65,6 +74,7 @@ public class GameServer {
             game.start();
         }
     }
+
 
 
     public static void main(String[] args) throws IOException {

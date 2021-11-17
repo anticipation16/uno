@@ -31,6 +31,27 @@ public class CardUtility {
         return cardsOfColor;
     }
 
+    public static boolean areBothColoredAndHaveSameColor(Card c1, Card c2) {
+        if(c1 instanceof  ColoredCard && c2 instanceof  ColoredCard){
+            return ((ColoredCard) c1).getColor() == ((ColoredCard) c2).getColor();
+        }
+        return false;
+    }
+
+    public static boolean areBothNumberedAndHaveSameNumber(Card c1, Card c2) {
+        if(c1 instanceof  NumberedCard && c2 instanceof  NumberedCard){
+            return ((NumberedCard) c1).getNumber() == ((NumberedCard) c2).getNumber();
+        }
+        return false;
+    }
+
+    public static boolean areBothSpecialAndHaveSameSpeciality(Card c1, Card c2) {
+        if(c1 instanceof  SpecialColoredCard && c2 instanceof  SpecialColoredCard){
+            return ((SpecialColoredCard) c1).getSpeciality() == ((SpecialColoredCard) c2).getSpeciality();
+        }
+        return false;
+    }
+
     /**
      * Returns card from a string of form [Letter - R/G/B/Y]:[Number 0-9] or [Letter - R/G/B/Y]:[Speciality]
      *

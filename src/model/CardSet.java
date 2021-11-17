@@ -31,6 +31,11 @@ public class CardSet {
         cards.remove(card);
     }
 
+    public int size(){
+        return cards.size();
+    }
+
+
     public static void main(String[] args) {
         Card c = new NumberedCard(Color.YELLOW, 3);
         Card c2 = new NumberedCard(Color.YELLOW, 3);

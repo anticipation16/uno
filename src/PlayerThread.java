@@ -1,3 +1,4 @@
+import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
 
 import java.io.BufferedReader;
@@ -31,7 +32,7 @@ public class PlayerThread extends Thread {
             while ((clientMove = in.readLine()) != null) {
                 try {
                     gameServer.processMove(this, clientMove);
-                } catch (IllegalMoveException e) {
+                } catch (IllegalMoveException | IllegalCardStringException e) {
                     out.println(e.getMessage());
                 }
 
@@ -48,5 +49,11 @@ public class PlayerThread extends Thread {
 
     public void sendMessage(String message) {
         out.println(message);
+    }
+
+    public String askQuestion(String question) throws IOException {
+        out.println(question);
+        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        return in.readLine();
     }
 }

@@ -14,6 +14,10 @@ public class NumberedCard extends ColoredCard {
         return getColor().name().charAt(0) + ":" + value;
     }
 
+    public int getNumber(){
+        return value;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

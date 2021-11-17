@@ -2,6 +2,7 @@ import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
 import model.*;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,9 +15,37 @@ public class Game {
     private int currentPlayerIndex;
     private final Pile drawPile;
     private final Pile discardPile;
+
     private GameStatus status;
-    private final Map<Player, CardSet> playerCardSetMap = new HashMap<>();
     private final GameServer gameServer;
+
+    public GameServer getGameServer() {
+        return gameServer;
+    }
+
+    public int getCurrentPlayerIndex() {
+        return currentPlayerIndex;
+    }
+
+    public int getMaxPlayers() {
+        return maxPlayers;
+    }
+
+    public void setCurrentPlayerIndex(int currentPlayerIndex) {
+        this.currentPlayerIndex = currentPlayerIndex;
+    }
+
+    public Pile getDrawPile() {
+        return drawPile;
+    }
+
+    public Pile getDiscardPile() {
+        return discardPile;
+    }
+
+    public GameStatus getStatus() {
+        return status;
+    }
 
 
     public Game(int maxPlayers, GameServer gameServer) {
@@ -40,6 +69,10 @@ public class Game {
         return players.get(currentPlayerIndex);
     }
 
+    public Player getNextPlayer() {
+        return players.get((currentPlayerIndex + 1) % maxPlayers);
+    }
+
     public void setStatus(GameStatus status) {
         this.status = status;
     }
@@ -49,14 +82,16 @@ public class Game {
         for (Player player : players) {
             CardSet cardSet = new CardSet();
             // give set of 7 cards to each player p
-            for (int i = 0; i < 7; i++) {
+            for (int i = 0; i < 3; i++) {
                 cardSet.add(drawPile.popTopCard());
             }
-            playerCardSetMap.put(player, cardSet);
+            player.setCardSet(cardSet);
             gameServer.messagePlayer("Your cards are:\n" + cardSet, player);
         }
         gameServer.broadcast("Let the game begin");
         gameServer.broadcast("Players are : " + this.getPlayers());
+        // TODO - discard pile should be empty at first
+        discardPile.addCard(drawPile.popTopCard());
         infoBroadcast();
     }
 
@@ -69,46 +104,18 @@ public class Game {
      */
 
 
-    public void processMove(Player player, String move) throws IllegalMoveException {
-        if (status.equals(GameStatus.WAITING_FOR_PLAYERS))
-            throw new IllegalMoveException("Insufficient players!");
-        if (players.get(currentPlayerIndex) != player)
-            throw new IllegalMoveException("Not your turn!");
+    public void processMove(Player player, String move)
+            throws IllegalMoveException, IllegalCardStringException, IOException {
+        move = move.toUpperCase();
 
-        try {
-            Card playedCard = CardUtility.stringRepToCard(move);
-            CardSet playerCardSet = playerCardSetMap.get(player);
-            if (!playerCardSet.contains(playedCard)) {
-                throw new IllegalMoveException("You do not have this card!");
-            }
-
-            Card drawPileTop = drawPile.peekTopCard();
-
-            if(drawPileTop instanceof ColoredCard && playedCard instanceof ColoredCard){
-                if(!((ColoredCard) drawPileTop).getColor().equals( ((ColoredCard) playedCard).getColor())){
-                    throw new IllegalMoveException("Your card color does not match top card on pile!");
-                }
-            }
-
-            playerCardSet.remove(playedCard);
-            discardPile.addCard(drawPile.popTopCard());
-
-        } catch (IllegalCardStringException e) {
-            throw new IllegalMoveException("Illegal Move String Played: " + e.getMessage());
-        }
-
-        String info = " made the move " + move;
-        gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
-                player.getName() + info,
-                "You " + info,
-                player);
-        incrementCurrentPlayerIndex();
+        MoveProcessor.processMove(this, player, move);
+        infoBroadcast();
     }
 
 
     private void infoBroadcast() {
         Player currentPlayer = getCurrentPlayer();
-        gameServer.broadcast("Top card on draw pile is " + drawPile.peekTopCard());
+        gameServer.broadcast("Top card on discard pile is " + discardPile.peekTopCard());
         gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
                 currentPlayer.getName() + "'s turn",
                 "Your turn",
@@ -116,9 +123,8 @@ public class Game {
         );
     }
 
-    private void incrementCurrentPlayerIndex() {
+    public void incrementCurrentPlayerIndex() {
         currentPlayerIndex = (currentPlayerIndex + 1) % maxPlayers;
-        infoBroadcast();
     }
 
     public void addPlayer(Player p) {
