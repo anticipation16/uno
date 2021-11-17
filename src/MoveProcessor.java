@@ -15,6 +15,8 @@ public class MoveProcessor {
             throw new IllegalMoveException("Insufficient players!");
         if (!game.getStatus().equals(GameStatus.UNO_PENDING_MODE) && game.getCurrentPlayer() != player)
             throw new IllegalMoveException("Not your turn!");
+        if (game.getStatus().equals(GameStatus.FINISHED))
+            throw new IllegalMoveException("Game is over!");
 
         if (move.equals("UNO")) {
             if (player.getCardSet().size() == 1) {
@@ -22,6 +24,7 @@ public class MoveProcessor {
                         player.getName() + " said UNO!",
                         "Successful UNO!");
                 game.setStatus(GameStatus.IN_PROGRESS);
+                return;
             } else {
                 for (Player p : game.getPlayers()) {
                     if (p.getCardSet().size() == 1) {
@@ -29,8 +32,8 @@ public class MoveProcessor {
                         playerWithOneCard.getCardSet().add(game.getDrawPile().popTopCard());
                         playerWithOneCard.getCardSet().add(game.getDrawPile().popTopCard());
 
-                        String messageToUNOd = "You were UNO'd by " + playerWithOneCard.getName();
-                        String messageToUNOer = "You successfully UNO'd" + playerWithOneCard.getName() + " who had to draw 2 cards";
+                        String messageToUNOd = "You were UNO'd by " + player.getName();
+                        String messageToUNOer = "You successfully UNO'd " + playerWithOneCard.getName() + " who had to draw 2 cards";
                         String messageToOthers = player.getName() + " successfully UNO'd" + playerWithOneCard.getName()
                                 + " who had to draw 2 cards";
 
@@ -51,7 +54,6 @@ public class MoveProcessor {
             return;
         }
 
-
         Card discardPileTop = game.getDiscardPile().peekTopCard();
         Card playedCard = CardUtility.stringRepToCard(move);
         CardSet playerCardSet = player.getCardSet();
@@ -69,6 +71,12 @@ public class MoveProcessor {
 
         if (player.getCardSet().size() == 1)
             game.setStatus(GameStatus.UNO_PENDING_MODE);
+
+        if (player.getCardSet().isEmpty()) {
+            game.setStatus(GameStatus.FINISHED);
+            broadCastMoveInfo(game, player, player.getName() + " won the game", "YOU WIN!");
+        }
+
 
     }
 

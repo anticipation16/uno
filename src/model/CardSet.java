@@ -31,8 +31,12 @@ public class CardSet {
         cards.remove(card);
     }
 
-    public int size(){
+    public int size() {
         return cards.size();
+    }
+
+    public boolean isEmpty() {
+        return size() == 0;
     }
 
 
