@@ -7,7 +7,7 @@ public abstract class ColoredCard implements Card {
         return color;
     }
 
-    public ColoredCard(Color color) {
+    protected ColoredCard(Color color) {
         this.color = color;
     }
 

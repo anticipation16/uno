@@ -1,3 +1,5 @@
+package client;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,9 +27,10 @@ public class GameClient {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String inputLine;
-                while ((inputLine = in.readLine()) != null) {
+                while ((inputLine = in.readLine()) != "close") {
                     System.out.println(inputLine);
                 }
+                socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

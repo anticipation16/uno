@@ -10,7 +10,6 @@ public class Pile {
     public Pile() {
     }
 
-
     public Pile(List<Card> cardList) {
         cards.addAll(cardList);
     }
@@ -18,7 +17,6 @@ public class Pile {
     public void shuffle() {
         Collections.shuffle(cards);
     }
-
 
     public Card popTopCard() {
         return cards.pop();

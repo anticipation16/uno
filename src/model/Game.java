@@ -1,6 +1,10 @@
+package model;
+
 import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
+import interaction.MoveProcessor;
 import model.*;
+import server.GameServer;
 
 import java.io.IOException;
 import java.util.*;
@@ -8,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static model.Color.*;
+import static model.GameStatus.*;
 
 public class Game {
     private final int maxPlayers;
@@ -15,9 +20,28 @@ public class Game {
     private int currentPlayerIndex;
     private final Pile drawPile;
     private final Pile discardPile;
-
+    private static final int INITIAL_CARDS_PER_USER = 7;
     private GameStatus status;
     private final GameServer gameServer;
+
+
+    public Game(int maxPlayers, GameServer gameServer) {
+        this.maxPlayers = maxPlayers;
+        this.gameServer = gameServer;
+        this.currentPlayerIndex = 0;
+
+        var yellowCards = CardUtility.getAllCardsOfColorInUNODeck(YELLOW);
+        var greenCards = CardUtility.getAllCardsOfColorInUNODeck(GREEN);
+        var blueCards = CardUtility.getAllCardsOfColorInUNODeck(BLUE);
+        var redCards = CardUtility.getAllCardsOfColorInUNODeck(RED);
+
+        List<Card> allCards = Stream.of(yellowCards, greenCards, blueCards, redCards)
+                .flatMap(Collection::stream).toList();
+
+        drawPile = new Pile(allCards);
+        discardPile = new Pile();
+
+    }
 
     public GameServer getGameServer() {
         return gameServer;
@@ -29,10 +53,6 @@ public class Game {
 
     public int getMaxPlayers() {
         return maxPlayers;
-    }
-
-    public void setCurrentPlayerIndex(int currentPlayerIndex) {
-        this.currentPlayerIndex = currentPlayerIndex;
     }
 
     public Pile getDrawPile() {
@@ -47,24 +67,6 @@ public class Game {
         return status;
     }
 
-
-    public Game(int maxPlayers, GameServer gameServer) {
-        this.maxPlayers = maxPlayers;
-        currentPlayerIndex = 0;
-        var yellowCards = CardUtility.getAllCardsOfColor(YELLOW);
-        var greenCards = CardUtility.getAllCardsOfColor(GREEN);
-        var blueCards = CardUtility.getAllCardsOfColor(BLUE);
-        var redCards = CardUtility.getAllCardsOfColor(RED);
-
-        List<Card> allCards = Stream.of(yellowCards, greenCards, blueCards, redCards)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
-        drawPile = new Pile(allCards);
-        discardPile = new Pile();
-        this.gameServer = gameServer;
-    }
-
-
     public Player getCurrentPlayer() {
         return players.get(currentPlayerIndex);
     }
@@ -77,26 +79,34 @@ public class Game {
         this.status = status;
     }
 
+    public void setCurrentPlayerIndex(int currentPlayerIndex) {
+        this.currentPlayerIndex = currentPlayerIndex;
+    }
+
     public void start() {
+
         drawPile.shuffle();
-        for (Player player : players) {
-            CardSet cardSet = new CardSet();
-            // give set of 7 cards to each player p
-            for (int i = 0; i < 3; i++) {
-                cardSet.add(drawPile.popTopCard());
-            }
+
+        for (var player : players) {
+            var cardSet = new CardSet();
+            for (int i = 0; i < INITIAL_CARDS_PER_USER; i++) cardSet.add(drawPile.popTopCard());
             player.setCardSet(cardSet);
             gameServer.messagePlayer("Your cards are:\n" + cardSet, player);
         }
-        gameServer.broadcast("Let the game begin");
+        gameServer.broadcast("Let the game begin!");
         gameServer.broadcast("Players are : " + this.getPlayers());
-        // TODO - discard pile should be empty at first
         discardPile.addCard(drawPile.popTopCard());
-        infoBroadcast();
+        topDiscardedCardAndTurnBroadcast();
     }
 
     /**
      * Process move of the move [1stLetterOfColor]:Number or [1stLetterOfColor]:Speciality
+     * Eg. A move of the form r9 indicates the player wants to play a red card numbered 9.
+     * Also processed:
+     * 1) view cards : to allow a player to view their card set,
+     * 2) view cards -o : to allow a player to view number of cards with everyone else
+     * 3) uno : to allow a player with 1 card to say UNO or
+     * to allow a player with more than 1 cards make the above player draw 2 cards.
      *
      * @param player the player who made the move
      * @param move   the move made by the player p
@@ -107,18 +117,19 @@ public class Game {
     public void processMove(Player player, String move)
             throws IllegalMoveException, IllegalCardStringException, IOException {
         move = move.toUpperCase();
-
         MoveProcessor.processMove(this, player, move);
-        infoBroadcast();
+        if (status.equals(FINISHED)) gameServer.endConnections();
+        if (!move.contains("view"))
+            topDiscardedCardAndTurnBroadcast();
     }
 
 
-    private void infoBroadcast() {
+    private void topDiscardedCardAndTurnBroadcast() {
         Player currentPlayer = getCurrentPlayer();
-        gameServer.broadcast("Top card on discard pile is " + discardPile.peekTopCard());
+        gameServer.broadcast("\nTop card on discard pile is " + discardPile.peekTopCard());
         gameServer.broadcastMessage1ToOthersMessage2ToPlayer(
                 currentPlayer.getName() + "'s turn",
-                "Your turn",
+                "\nYour turn",
                 currentPlayer
         );
     }

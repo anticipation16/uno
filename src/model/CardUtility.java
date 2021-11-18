@@ -6,6 +6,12 @@ import java.util.*;
 
 public class CardUtility {
     private static final Map<String, Color> stringColorHashMap = new HashMap<>();
+    public static final int UNO_MIN_NUMBER = 0;
+    public static final int UNO_MAX_NUMBER = 9;
+
+    private CardUtility() {
+
+    }
 
     static {
         stringColorHashMap.put("Y", Color.YELLOW);
@@ -14,46 +20,46 @@ public class CardUtility {
         stringColorHashMap.put("R", Color.RED);
     }
 
-    public static List<Card> getAllCardsOfColor(Color color) {
+    public static List<Card> getAllCardsOfColorInUNODeck(Color color) {
         List<Card> cardsOfColor = new ArrayList<>();
-        final int UNO_MIN_NUMBER = 1;
-        final int UNO_MAX_NUMBER = 9;
 
         for (int i = UNO_MIN_NUMBER; i <= UNO_MAX_NUMBER; i++) {
             Card c = new NumberedCard(color, i);
             cardsOfColor.add(c);
+            if (i > UNO_MIN_NUMBER)
+                cardsOfColor.add(c); // cards from 1 are present twice for each set
         }
 
-        cardsOfColor.add(new SpecialColoredCard(color, Speciality.DRAW2));
-        cardsOfColor.add(new SpecialColoredCard(color, Speciality.SKIP));
-        cardsOfColor.add(new SpecialColoredCard(color, Speciality.REVERSE));
+        for (int i = 0; i < 2; i++) {
+            cardsOfColor.add(new SpecialColoredCard(color, Speciality.DRAW2));
+            cardsOfColor.add(new SpecialColoredCard(color, Speciality.SKIP));
+            cardsOfColor.add(new SpecialColoredCard(color, Speciality.REVERSE));
+        }
 
         return cardsOfColor;
     }
 
     public static boolean areBothColoredAndHaveSameColor(Card c1, Card c2) {
-        if(c1 instanceof  ColoredCard && c2 instanceof  ColoredCard){
-            return ((ColoredCard) c1).getColor() == ((ColoredCard) c2).getColor();
-        }
+        if (c1 instanceof ColoredCard coloredCard1 && c2 instanceof ColoredCard coloredCard2)
+            return coloredCard1.getColor() == coloredCard2.getColor();
         return false;
     }
 
     public static boolean areBothNumberedAndHaveSameNumber(Card c1, Card c2) {
-        if(c1 instanceof  NumberedCard && c2 instanceof  NumberedCard){
-            return ((NumberedCard) c1).getNumber() == ((NumberedCard) c2).getNumber();
-        }
+        if (c1 instanceof NumberedCard numberedCard1 && c2 instanceof NumberedCard numberedCard2)
+            return numberedCard1.getNumber() == numberedCard2.getNumber();
         return false;
     }
 
     public static boolean areBothSpecialAndHaveSameSpeciality(Card c1, Card c2) {
-        if(c1 instanceof  SpecialColoredCard && c2 instanceof  SpecialColoredCard){
-            return ((SpecialColoredCard) c1).getSpeciality() == ((SpecialColoredCard) c2).getSpeciality();
-        }
+        if (c1 instanceof SpecialColoredCard specialColoredCard1 && c2 instanceof SpecialColoredCard specialColoredCard2)
+            return specialColoredCard1.getSpeciality() == specialColoredCard2.getSpeciality();
         return false;
     }
 
     /**
      * Returns card from a string of form [Letter - R/G/B/Y]:[Number 0-9] or [Letter - R/G/B/Y]:[Speciality]
+     * Examole: R:9 will return a red card with number 9
      *
      * @param str string representation of the card
      * @return a card object from the string
@@ -67,20 +73,16 @@ public class CardUtility {
                         );
 
         if (str.length() == 2) {
-            if (!Character.isDigit(str.charAt(1))) {
-                throw new IllegalCardStringException(
-                        str.charAt(0) + " is not a number");
-            }
+            if (!Character.isDigit(str.charAt(1))) throw new IllegalCardStringException(
+                    str.charAt(0) + " is not a number"
+            );
             int n = Integer.parseInt(str.substring(1));
             return new NumberedCard(c, n);
-        } else {
-            try {
-                Speciality speciality = Speciality.valueOf(str.substring(1));
-                return new SpecialColoredCard(c, speciality);
-            } catch (IllegalArgumentException e) {
-                throw new IllegalCardStringException(str.substring(1) + " is not a valid speciality");
-            }
-
+        } else try {
+            Speciality speciality = Speciality.valueOf(str.substring(1));
+            return new SpecialColoredCard(c, speciality);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalCardStringException(str.substring(1) + " is not a valid speciality");
         }
     }
 }

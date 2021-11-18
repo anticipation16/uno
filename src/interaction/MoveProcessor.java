@@ -1,3 +1,5 @@
+package interaction;
+
 import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
 import model.*;
@@ -9,44 +11,29 @@ import java.util.Collections;
 import static model.CardUtility.*;
 import static model.Speciality.*;
 
-public class MoveProcessor {
+public final class MoveProcessor {
+
+    private MoveProcessor() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static void processMove(Game game, Player player, String move) throws IllegalMoveException, IllegalCardStringException, IOException {
-        if (game.getStatus().equals(GameStatus.WAITING_FOR_PLAYERS))
-            throw new IllegalMoveException("Insufficient players!");
-        if (!game.getStatus().equals(GameStatus.UNO_PENDING_MODE) && game.getCurrentPlayer() != player)
-            throw new IllegalMoveException("Not your turn!");
-        if (game.getStatus().equals(GameStatus.FINISHED))
-            throw new IllegalMoveException("Game is over!");
+
+        if (move.equals("VIEW CARDS")) {
+            informPlayerOfCardSet(game, player);
+            return;
+        }
+
+        if (move.equals("VIEW CARDS -O")) {
+            informPlayerOfOthersNumberOfCards(game, player);
+            return;
+        }
+
+        checkTurn(game, player);
 
         if (move.equals("UNO")) {
-            if (player.getCardSet().size() == 1) {
-                broadCastMoveInfo(game, player,
-                        player.getName() + " said UNO!",
-                        "Successful UNO!");
-                game.setStatus(GameStatus.IN_PROGRESS);
-                return;
-            } else {
-                for (Player p : game.getPlayers()) {
-                    if (p.getCardSet().size() == 1) {
-                        Player playerWithOneCard = p;
-                        playerWithOneCard.getCardSet().add(game.getDrawPile().popTopCard());
-                        playerWithOneCard.getCardSet().add(game.getDrawPile().popTopCard());
-
-                        String messageToUNOd = "You were UNO'd by " + player.getName();
-                        String messageToUNOer = "You successfully UNO'd " + playerWithOneCard.getName() + " who had to draw 2 cards";
-                        String messageToOthers = player.getName() + " successfully UNO'd" + playerWithOneCard.getName()
-                                + " who had to draw 2 cards";
-
-                        informPlayer(game, playerWithOneCard, messageToUNOd);
-                        informPlayer(game, player, messageToUNOer);
-                        informPlayerOfCardSet(game, playerWithOneCard);
-                        broadcastToAllExcept(game, player, messageToOthers);
-                        game.setStatus(GameStatus.IN_PROGRESS);
-                        return;
-                    }
-                }
-
-            }
+            processSaidUNO(game, player);
+            return;
         }
 
         if (move.equals("DRAW")) {
@@ -64,10 +51,10 @@ public class MoveProcessor {
         if (isDrawnCardNotPlayableOnTopCard(playedCard, discardPileTop))
             throw new IllegalMoveException("Your card color/number/speciality does not match top card on pile!");
 
-        if (playedCard instanceof NumberedCard) {
-            processNumberedCard(game, player, (NumberedCard) playedCard);
-        } else if (playedCard instanceof SpecialColoredCard)
-            processSpecialColoredCard(game, player, (SpecialColoredCard) playedCard);
+        if (playedCard instanceof NumberedCard playedNumberedCard)
+            processNumberedCard(game, player, playedNumberedCard);
+        else if (playedCard instanceof SpecialColoredCard playedSpecialColoredCard)
+            processSpecialColoredCard(game, player, playedSpecialColoredCard);
 
         if (player.getCardSet().size() == 1)
             game.setStatus(GameStatus.UNO_PENDING_MODE);
@@ -78,6 +65,46 @@ public class MoveProcessor {
         }
 
 
+    }
+
+    private static void checkTurn(Game game, Player player) throws IllegalMoveException {
+        if (game.getStatus().equals(GameStatus.WAITING_FOR_PLAYERS))
+            throw new IllegalMoveException("Insufficient players!");
+
+        if (!game.getStatus().equals(GameStatus.UNO_PENDING_MODE) && game.getCurrentPlayer() != player)
+            throw new IllegalMoveException("Not your turn!");
+
+        if (game.getStatus().equals(GameStatus.FINISHED))
+            throw new IllegalMoveException("model.Game is over!");
+    }
+
+    private static void processSaidUNO(Game game, Player player) {
+        if (player.getCardSet().size() == 1) {
+            broadCastMoveInfo(game, player,
+                    player.getName() + " said UNO!",
+                    "Successful UNO!");
+            game.setStatus(GameStatus.IN_PROGRESS);
+        } else {
+            for (Player p : game.getPlayers()) {
+                if (p.getCardSet().size() == 1) {
+                    Player playerWithOneCard = p;
+                    playerWithOneCard.getCardSet().add(game.getDrawPile().popTopCard());
+                    playerWithOneCard.getCardSet().add(game.getDrawPile().popTopCard());
+
+                    String messageToUNOd = "You were UNO'd by " + player.getName();
+                    String messageToUNOer = "You successfully UNO'd " + playerWithOneCard.getName() + " who had to draw 2 cards";
+                    String messageToOthers = player.getName() + " successfully UNO'd" + playerWithOneCard.getName()
+                            + " who had to draw 2 cards";
+
+                    informPlayer(game, playerWithOneCard, messageToUNOd);
+                    informPlayer(game, player, messageToUNOer);
+                    informPlayerOfCardSet(game, playerWithOneCard);
+                    broadcastToAllExcept(game, player, messageToOthers);
+                    game.setStatus(GameStatus.IN_PROGRESS);
+                    return;
+                }
+            }
+        }
     }
 
     public static void processDrawACard(Game game, Player player) throws IOException, IllegalMoveException, IllegalCardStringException {
@@ -110,13 +137,11 @@ public class MoveProcessor {
 
     }
 
-
     private static boolean isDrawnCardNotPlayableOnTopCard(Card drawnCard, Card topCard) {
         return !areBothColoredAndHaveSameColor(drawnCard, topCard) &&
                 !areBothNumberedAndHaveSameNumber(drawnCard, topCard) &&
                 !areBothSpecialAndHaveSameSpeciality(drawnCard, topCard);
     }
-
 
     private static void processSpecialColoredCard(Game game, Player player, SpecialColoredCard playedCard) {
         if (playedCard.getSpeciality().equals(SKIP))
@@ -219,9 +244,14 @@ public class MoveProcessor {
                 messageToPlayer, player);
     }
 
-
     private static void informPlayerOfCardSet(Game game, Player player) {
         game.getGameServer().messagePlayer("Your cards now:\n" + player.getCardSet(), player);
+    }
+
+    private static void informPlayerOfOthersNumberOfCards(Game game, Player player) {
+        String info = "";
+        for (var p : game.getPlayers()) info += p.getName() + ": " + p.getCardSet().size() + "\n";
+        informPlayer(game, player, info);
     }
 
     private static void informPlayer(Game game, Player player, String message) {
