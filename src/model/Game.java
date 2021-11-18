@@ -3,16 +3,16 @@ package model;
 import exceptions.IllegalCardStringException;
 import exceptions.IllegalMoveException;
 import interaction.MoveProcessor;
-import model.*;
 import server.GameServer;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static model.Color.*;
-import static model.GameStatus.*;
+import static model.GameStatus.FINISHED;
 
 public class Game {
     private final int maxPlayers;
@@ -112,17 +112,17 @@ public class Game {
      * @param move   the move made by the player p
      * @throws IllegalMoveException when an illegal move is made
      */
-
-
     public void processMove(Player player, String move)
             throws IllegalMoveException, IllegalCardStringException, IOException {
         move = move.toUpperCase();
         MoveProcessor.processMove(this, player, move);
-        if (status.equals(FINISHED)) gameServer.endConnections();
-        if (!move.contains("view"))
+        if (status.equals(FINISHED)) {
+            gameServer.endConnections();
+            return;
+        }
+        if (!move.contains("VIEW"))
             topDiscardedCardAndTurnBroadcast();
     }
-
 
     private void topDiscardedCardAndTurnBroadcast() {
         Player currentPlayer = getCurrentPlayer();
