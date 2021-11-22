@@ -2,7 +2,7 @@ package model;
 
 public class Player {
     private final String name;
-
+    private CardSet cardSet;
     public CardSet getCardSet() {
         return cardSet;
     }
@@ -11,7 +11,6 @@ public class Player {
         this.cardSet = cardSet;
     }
 
-    private CardSet cardSet;
 
     public Player(String name) {
         this.name = name;

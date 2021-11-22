@@ -107,7 +107,7 @@ public final class MoveProcessor {
         }
     }
 
-    public static void processDrawACard(Game game, Player player) throws IOException, IllegalMoveException, IllegalCardStringException {
+    private static void processDrawACard(Game game, Player player) throws IOException, IllegalMoveException, IllegalCardStringException {
         Card drawnCard = game.getDrawPile().popTopCard();
         player.getCardSet().add(drawnCard);
         String messageToPlayer = "You drew the card " + drawnCard;
@@ -152,7 +152,7 @@ public final class MoveProcessor {
             processReverseCard(game, player, playedCard);
     }
 
-    public static void processNumberedCard(Game game, Player player, NumberedCard card) {
+    private static void processNumberedCard(Game game, Player player, NumberedCard card) {
         player.getCardSet().remove(card);
         game.getDiscardPile().addCard(card);
 
@@ -249,9 +249,10 @@ public final class MoveProcessor {
     }
 
     private static void informPlayerOfOthersNumberOfCards(Game game, Player player) {
-        String info = "";
-        for (var p : game.getPlayers()) info += p.getName() + ": " + p.getCardSet().size() + "\n";
-        informPlayer(game, player, info);
+        var info = new StringBuilder();
+        for (var p : game.getPlayers())
+            info.append(p.getName()).append(": ").append(p.getCardSet().size()).append("\n");
+        informPlayer(game, player, info.toString());
     }
 
     private static void informPlayer(Game game, Player player, String message) {

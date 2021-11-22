@@ -10,6 +10,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+/**
+ * The PlayerThread class extends {@code Thread} to associate the {@code model.Game} to a particular thread
+ * and allow the {@code GameServer}'s simple socket to read from and write to the Player client.
+ */
 public final class PlayerThread extends Thread {
     private final Socket socket;
     private final GameServer gameServer;
@@ -29,7 +33,7 @@ public final class PlayerThread extends Thread {
             out.println("What's your name? ");
             String userName = in.readLine();
             player = new Player(userName);
-            gameServer.addPlayer(player, this);
+            gameServer.processNewPlayer(player, this);
 
             String clientMove;
             while ((clientMove = in.readLine()) != null) {

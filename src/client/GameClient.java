@@ -5,8 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Objects;
 
-public class GameClient {
+/**
+ * This class represents an UNO Game client that sends a request to the game server through its main method.
+ */
+public final class GameClient {
     private Socket socket;
     private final String hostName;
     private final int port;
@@ -27,7 +31,7 @@ public class GameClient {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String inputLine;
-                while ((inputLine = in.readLine()) != "close") {
+                while (!Objects.equals(inputLine = in.readLine(), "close")) {
                     System.out.println(inputLine);
                 }
                 socket.close();
@@ -55,6 +59,11 @@ public class GameClient {
         new Thread(r).start();
     }
 
+    /**
+     * @param args <br>
+     * {@code args[0]}: The IP address of the host (server) to which request is to be sent.<br/>
+     * {@code args[1]}: The port number of the server socket to request to.
+     */
     public static void main(String[] args) throws IOException {
         String hostName = args[0];
         int port = Integer.parseInt(args[1]);
