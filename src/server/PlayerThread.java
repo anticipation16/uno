@@ -57,10 +57,20 @@ public final class PlayerThread extends Thread {
         return player;
     }
 
+    /**
+     * Sends the message to the client.
+     * @param message The message to be sent to the game client
+     */
     public void sendMessage(String message) {
         out.println(message);
     }
 
+    /**
+     * Sends the question to the client output stream.
+     * @param question The question posed.
+     * @return The response from the game client
+     * @throws IOException
+     */
     public String askQuestion(String question) throws IOException {
         out.println(question);
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
