@@ -36,10 +36,12 @@ public final class GameServer {
      */
     public void execute() {
         try (var serverSocket = new ServerSocket(port)) {
+            System.out.printf("Server socket listening for connections on port %d.\n", port);
             game = new Game(maxPlayers, this);
             game.setStatus(WAITING_FOR_PLAYERS);
             for (int i = 0; i < maxPlayers; i++) {
                 Socket clientSocket = serverSocket.accept();
+                System.out.printf("Client %d connected\n", i + 1);
                 PlayerThread playerThread = new PlayerThread(clientSocket, this);
                 playerThread.start();
             }
@@ -150,7 +152,7 @@ public final class GameServer {
      *             args[1] - The maximum number of players allowed in the game
      */
     public static void main(String[] args) {
-        if (args.length > 2) {
+        if (args.length == 2) {
             int port = Integer.parseInt(args[0]);
             int maxPlayers = Integer.parseInt(args[1]);
             GameServer g = new GameServer(port, maxPlayers);

@@ -1,11 +1,9 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Objects;
+import java.util.Scanner;
 
 /**
  * This class represents an UNO Game client that sends a request to the game server through its main method.
@@ -14,6 +12,9 @@ public final class GameClient {
     private Socket socket;
     private final String hostName;
     private final int port;
+    private volatile boolean isDisconnected;
+    private final Scanner clientInputReader = new Scanner(System.in);
+
 
     public GameClient(String hostName, int port) {
         this.hostName = hostName;
@@ -22,6 +23,7 @@ public final class GameClient {
 
     public void execute() throws IOException {
         socket = new Socket(hostName, port);
+        isDisconnected = false;
         readFromServer();
         writeToServer();
     }
@@ -34,9 +36,15 @@ public final class GameClient {
                 while (!Objects.equals(inputLine = in.readLine(), "close")) {
                     System.out.println(inputLine);
                 }
+                //TODO: Remove
+                isDisconnected = true;
+                in.close();
                 socket.close();
             } catch (IOException e) {
+                System.out.println(e.getMessage());
                 e.printStackTrace();
+            } finally {
+
             }
         };
         new Thread(r).start();
@@ -47,16 +55,28 @@ public final class GameClient {
             try {
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 // for reading input on terminal
-                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 String inputLine;
-                while ((inputLine = br.readLine()) != null) {
-                    out.println(inputLine);
+                while (!isDisconnected) {
+//                    if (clientInputReader.ready()) {
+//                        while ((inputLine = clientInputReader.readLine()) != null) {
+//                            out.println(inputLine);
+//                        }
+//                    }
+                    while(clientInputReader.hasNextLine()){
+                        inputLine = clientInputReader.nextLine();
+                        out.println(inputLine);
+                    }
                 }
+                out.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+
             }
         };
-        new Thread(r).start();
+        var t = new Thread(r);
+        t.setDaemon(true);
+        t.start();
     }
 
     /**
@@ -65,7 +85,7 @@ public final class GameClient {
      *             {@code args[1]}: The port number of the server socket to request to.
      */
     public static void main(String[] args) throws IOException {
-        if (args.length < 2) {
+        if (args.length == 2) {
             String hostName = args[0];
             int port = Integer.parseInt(args[1]);
             GameClient gameClient = new GameClient(hostName, port);
