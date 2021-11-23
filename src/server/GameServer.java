@@ -11,7 +11,6 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import static model.GameStatus.IN_PROGRESS;
 import static model.GameStatus.WAITING_FOR_PLAYERS;
 
@@ -134,10 +133,10 @@ public final class GameServer {
 
     /**
      * @param playerThread The thread sending the move from the player
-     * @param move The player's move
-     * @throws IllegalMoveException If move is invalid according to game rules
+     * @param move         The player's move
+     * @throws IllegalMoveException       If move is invalid according to game rules
      * @throws IllegalCardStringException If an invalid string is sent
-     * @throws IOException If there's error processing input/output
+     * @throws IOException                If there's error processing input/output
      */
     public void processMove(PlayerThread playerThread, String move) throws IllegalMoveException, IllegalCardStringException, IOException {
         game.processMove(playerThread.getPlayer(), move);
@@ -145,14 +144,23 @@ public final class GameServer {
 
     /**
      * Starts the server.
+     *
      * @param args <br/>
-     * args[0] - The port to start the server socket on <br/>
-     * args[1] - The maximum number of players allowed in the game
+     *             args[0] - The port to start the server socket on <br/>
+     *             args[1] - The maximum number of players allowed in the game
      */
     public static void main(String[] args) {
-        int port = Integer.parseInt(args[0]);
-        int maxPlayers = Integer.parseInt(args[1]);
-        GameServer g = new GameServer(port, maxPlayers);
-        g.execute();
+        if (args.length > 2) {
+            int port = Integer.parseInt(args[0]);
+            int maxPlayers = Integer.parseInt(args[1]);
+            GameServer g = new GameServer(port, maxPlayers);
+            g.execute();
+        } else {
+            System.out.println(
+                    "Execute with 1st argument as port number for the server" +
+                            " and 2nd argument as player limit for the game."
+            );
+        }
+
     }
 }

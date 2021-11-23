@@ -61,13 +61,18 @@ public final class GameClient {
 
     /**
      * @param args <br>
-     * {@code args[0]}: The IP address of the host (server) to which request is to be sent.<br/>
-     * {@code args[1]}: The port number of the server socket to request to.
+     *             {@code args[0]}: The IP address of the host (server) to which request is to be sent.<br/>
+     *             {@code args[1]}: The port number of the server socket to request to.
      */
     public static void main(String[] args) throws IOException {
-        String hostName = args[0];
-        int port = Integer.parseInt(args[1]);
-        GameClient gameClient = new GameClient(hostName, port);
-        gameClient.execute();
+        if (args.length < 2) {
+            String hostName = args[0];
+            int port = Integer.parseInt(args[1]);
+            GameClient gameClient = new GameClient(hostName, port);
+            gameClient.execute();
+        } else {
+            System.out.println("Execute with 1st argument as server IP and second argument as server port");
+        }
+
     }
 }
