@@ -4,22 +4,31 @@ import exceptions.IllegalCardStringException;
 
 import java.util.*;
 
+import static model.Color.*;
+
+/**
+ * Performs useful operations related to cards in the game.
+ */
 public class CardUtility {
     private static final Map<String, Color> stringColorHashMap = new HashMap<>();
     public static final int UNO_MIN_NUMBER = 0;
     public static final int UNO_MAX_NUMBER = 9;
 
     private CardUtility() {
-
     }
 
     static {
-        stringColorHashMap.put("Y", Color.YELLOW);
-        stringColorHashMap.put("G", Color.GREEN);
-        stringColorHashMap.put("B", Color.BLUE);
-        stringColorHashMap.put("R", Color.RED);
+        stringColorHashMap.put("Y", YELLOW);
+        stringColorHashMap.put("G", GREEN);
+        stringColorHashMap.put("B", BLUE);
+        stringColorHashMap.put("R", RED);
     }
 
+    /**
+     * Returns all possible cards of {@code color} that are present in a standard uno deck.
+     * @param color The color whose all cards are needed
+     * @return all possible cards of {@code color} from a standard uno deck.
+     */
     public static List<Card> getAllCardsOfColorInUNODeck(Color color) {
         List<Card> cardsOfColor = new ArrayList<>();
 

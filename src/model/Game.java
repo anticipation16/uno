@@ -14,6 +14,9 @@ import java.util.stream.Stream;
 import static model.Color.*;
 import static model.GameStatus.FINISHED;
 
+/**
+ * Models an UNO Game.
+ */
 public class Game {
     private final int maxPlayers;
     private final List<Player> players = new ArrayList<>();

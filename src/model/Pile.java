@@ -4,6 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
+/**
+ * Represents a pile of UNO cards
+ */
 public class Pile {
     private final Stack<Card> cards = new Stack<>();
 

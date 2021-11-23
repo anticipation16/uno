@@ -2,6 +2,9 @@ package model;
 
 import java.util.Objects;
 
+/**
+ * Represents a valid numbered (and hence colored) card of an UNO deck.
+ */
 public class NumberedCard extends ColoredCard {
     private final int value;
     public NumberedCard(Color color, int value) {

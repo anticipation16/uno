@@ -2,6 +2,9 @@ package model;
 
 import java.util.Objects;
 
+/**
+ * Represents valid special colored cards - Draw2, Reverse, Skip
+ */
 public class SpecialColoredCard extends ColoredCard {
 
     private final Speciality speciality;

@@ -9,14 +9,27 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static model.CardUtility.*;
+import static model.GameStatus.*;
 import static model.Speciality.*;
 
+/**
+ * This class handles every player move made by any player of the game at any time.
+ */
 public final class MoveProcessor {
 
     private MoveProcessor() {
         throw new IllegalStateException("Utility class");
     }
 
+    /**
+     *
+     * @param game The game to process
+     * @param player The player who made the move
+     * @param move The move made by the player
+     * @throws IllegalMoveException When the move is disallowed.
+     * @throws IllegalCardStringException When the card is disallowed.
+     * @throws IOException When an IO processing error occurs.
+     */
     public static void processMove(Game game, Player player, String move) throws IllegalMoveException, IllegalCardStringException, IOException {
 
         if (move.equals("VIEW CARDS")) {
@@ -57,10 +70,10 @@ public final class MoveProcessor {
             processSpecialColoredCard(game, player, playedSpecialColoredCard);
 
         if (player.getCardSet().size() == 1)
-            game.setStatus(GameStatus.UNO_PENDING_MODE);
+            game.setStatus(UNO_PENDING_MODE);
 
         if (player.getCardSet().isEmpty()) {
-            game.setStatus(GameStatus.FINISHED);
+            game.setStatus(FINISHED);
             broadCastMoveInfo(game, player, player.getName() + " won the game", "YOU WIN!");
         }
 
@@ -68,13 +81,13 @@ public final class MoveProcessor {
     }
 
     private static void checkTurn(Game game, Player player) throws IllegalMoveException {
-        if (game.getStatus().equals(GameStatus.WAITING_FOR_PLAYERS))
+        if (game.getStatus().equals(WAITING_FOR_PLAYERS))
             throw new IllegalMoveException("Insufficient players!");
 
-        if (!game.getStatus().equals(GameStatus.UNO_PENDING_MODE) && game.getCurrentPlayer() != player)
+        if (!game.getStatus().equals(UNO_PENDING_MODE) && game.getCurrentPlayer() != player)
             throw new IllegalMoveException("Not your turn!");
 
-        if (game.getStatus().equals(GameStatus.FINISHED))
+        if (game.getStatus().equals(FINISHED))
             throw new IllegalMoveException("model.Game is over!");
     }
 
@@ -83,7 +96,7 @@ public final class MoveProcessor {
             broadCastMoveInfo(game, player,
                     player.getName() + " said UNO!",
                     "Successful UNO!");
-            game.setStatus(GameStatus.IN_PROGRESS);
+            game.setStatus(IN_PROGRESS);
         } else {
             for (Player p : game.getPlayers()) {
                 if (p.getCardSet().size() == 1) {
@@ -100,7 +113,7 @@ public final class MoveProcessor {
                     informPlayer(game, player, messageToUNOer);
                     informPlayerOfCardSet(game, playerWithOneCard);
                     broadcastToAllExcept(game, player, messageToOthers);
-                    game.setStatus(GameStatus.IN_PROGRESS);
+                    game.setStatus(IN_PROGRESS);
                     return;
                 }
             }
