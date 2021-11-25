@@ -43,8 +43,6 @@ public final class GameClient {
             } catch (IOException e) {
                 System.out.println(e.getMessage());
                 e.printStackTrace();
-            } finally {
-
             }
         };
         new Thread(r).start();
@@ -57,11 +55,6 @@ public final class GameClient {
                 // for reading input on terminal
                 String inputLine;
                 while (!isDisconnected) {
-//                    if (clientInputReader.ready()) {
-//                        while ((inputLine = clientInputReader.readLine()) != null) {
-//                            out.println(inputLine);
-//                        }
-//                    }
                     while(clientInputReader.hasNextLine()){
                         inputLine = clientInputReader.nextLine();
                         out.println(inputLine);
@@ -70,8 +63,6 @@ public final class GameClient {
                 out.close();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-
             }
         };
         var t = new Thread(r);

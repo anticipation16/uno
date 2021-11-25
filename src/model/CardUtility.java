@@ -26,6 +26,7 @@ public class CardUtility {
 
     /**
      * Returns all possible cards of {@code color} that are present in a standard uno deck.
+     *
      * @param color The color whose all cards are needed
      * @return all possible cards of {@code color} from a standard uno deck.
      */
@@ -47,6 +48,9 @@ public class CardUtility {
 
         return cardsOfColor;
     }
+
+    // Todo: eliminate code smell using a better design pattern
+    // https://stackoverflow.com/questions/70073456/how-to-avoid-instanceof-and-dynamic-getter-check
 
     public static boolean areBothColoredAndHaveSameColor(Card c1, Card c2) {
         if (c1 instanceof ColoredCard coloredCard1 && c2 instanceof ColoredCard coloredCard2)
