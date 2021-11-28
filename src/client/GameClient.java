@@ -33,7 +33,7 @@ public final class GameClient {
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String inputLine;
-                while (!Objects.equals(inputLine = in.readLine(), "close")) {
+                while (!(in.readLine() == null) && !Objects.equals(inputLine = in.readLine(), "close")) {
                     System.out.println(inputLine);
                 }
                 //TODO: Remove
